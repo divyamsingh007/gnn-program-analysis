@@ -1,8 +1,8 @@
 # Project Usage Guide
 
 This guide explains how to install, run, test, and extend the program-analysis
-pipeline. The project currently provides Python APIs for each stage rather than
-a single command-line application.
+pipeline. The root `main.py` entry point provides a complete command-line
+workflow while the underlying Python APIs remain available for experiments.
 
 ## 1. What the project does
 
@@ -92,6 +92,67 @@ python -c "import torch, torch_geometric, networkx, sklearn, matplotlib, clang.c
 
 The tests use `tests/sample.c` and cover extraction, graph construction, PyG
 conversion, models, training, evaluation, and visualization.
+
+You can also verify dependencies through the entry point:
+
+```bash
+python main.py --check-dependencies
+```
+
+If the environment is not installed yet, add `--install-dependencies` to
+install the Python packages declared in `requirements.txt` before checking
+them. Clang/LLVM itself is an operating-system dependency and may still need
+to be installed separately.
+
+## 5. Run the complete pipeline
+
+The single entry point extracts the source, builds all graph views, encodes
+features, trains a model, evaluates it, and writes artifacts under
+`reports/latest_run`:
+
+```bash
+python main.py --source tests/sample.c --label 0 --epochs 5
+```
+
+Useful options include:
+
+```text
+--model multiview|gcn|gat|graphsage
+--epochs N
+--hidden-channels N
+--learning-rate FLOAT
+--batch-size N
+--device cpu|cuda
+--compiler-arg ARG       (repeat for multiple Clang arguments)
+--output-dir PATH
+--skip-training
+--install-dependencies
+```
+
+The run writes `model.pt`, `metrics.json`, `confusion_matrix.png`,
+`program_graph.png`, and, when training is enabled, `training.png`.
+
+### Run inline or interactive source code
+
+For a short program, pass code directly:
+
+```bash
+python main.py --code "int main(void) { return 0; }" --label 0
+```
+
+For multiline input, use `--interactive` and finish with `END` on its own
+line:
+
+```text
+python main.py --interactive --label 1
+int main(void) {
+    return 1;
+}
+END
+```
+
+Interactive and inline programs are written to a temporary C file for Clang
+and removed after the run.
 
 ## 5. Run extraction and build a multi-view graph
 

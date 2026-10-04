@@ -38,7 +38,7 @@ def evaluate_model(
         all_predictions.extend(predictions.cpu().tolist())
         total_loss += float(loss) * labels.numel()
         total_items += labels.numel()
-    result = classification_metrics(all_labels, all_predictions)
+    result = classification_metrics(all_labels, all_predictions, labels_order=[0, 1])
     result["loss"] = total_loss / total_items if total_items else 0.0
     result["labels"] = all_labels
     result["predictions"] = all_predictions

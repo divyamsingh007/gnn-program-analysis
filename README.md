@@ -134,6 +134,7 @@ project-root/
 
 For the complete setup, pipeline, training, evaluation, visualization, and
 troubleshooting instructions, see [`docs/USAGE.md`](docs/USAGE.md).
+The single-command entry point is `python main.py`.
 
 ### Prerequisites
 
@@ -170,20 +171,15 @@ troubleshooting instructions, see [`docs/USAGE.md`](docs/USAGE.md).
 ### Basic Execution Flow
 
 1. **Configure:** Set your dataset paths and model hyperparameters in `config/config.yaml`.
-2. **Extract:** Run the extraction pipeline to parse C/C++ files into graphs:
+2. **Run:** Analyze, train, evaluate, and create reports in one command:
 
    ```bash
-   python src/extraction/clang_utils.py --input data/raw --output data/interim
+   python main.py --source tests/sample.c --label 0
    ```
 
-3. **Train:** Start the GNN training process:
+3. **Advanced usage:** Use the individual Python APIs for dataset-scale
+   experiments, custom splits, and research workflows.
 
    ```bash
-   python src/training/train.py --experiment multiview_gnn
-   ```
-
-4. **Evaluate:** Generate evaluation metrics and plots:
-
-   ```bash
-   python src/evaluation/evaluate.py --checkpoint path/to/model.pt
+   python main.py --help
    ```
