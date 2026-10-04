@@ -36,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
     source.add_argument(
         "--interactive",
         action="store_true",
-        help="Read source code until a line containing only END.",
+        help="Launch the guided terminal workflow.",
     )
     parser.add_argument(
         "--install-dependencies",
@@ -78,6 +78,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("reports") / "latest_run",
         help="Directory for metrics, checkpoint, and plots.",
     )
+    parser.add_argument(
+        "--terminal-only",
+        action="store_true",
+        help="Print results without writing checkpoints, metrics, or plots.",
+    )
     return parser
 
 
@@ -116,6 +121,90 @@ def read_source(args: argparse.Namespace) -> tuple[Path, tempfile.TemporaryDirec
     path = Path(temporary_directory.name) / "input.c"
     path.write_text(code, encoding="utf-8")
     return path, temporary_directory
+
+
+def prompt_choice(prompt: str, choices: Sequence[str], default: str) -> str:
+    choices_text = "/".join(choices)
+    while True:
+        answer = input(f"{prompt} [{choices_text}] (default: {default}): ").strip().lower()
+        if not answer:
+            return default
+        if answer in choices:
+            return answer
+        print(f"Please choose one of: {', '.join(choices)}")
+
+
+def prompt_positive_int(prompt: str, default: int) -> int:
+    while True:
+        answer = input(f"{prompt} (default: {default}): ").strip()
+        if not answer:
+            return default
+        try:
+            value = int(answer)
+        except ValueError:
+            value = 0
+        if value > 0:
+            return value
+        print("Enter a positive integer.")
+
+
+def prompt_source() -> tuple[Path, tempfile.TemporaryDirectory[str] | None]:
+    print("\nInput options:")
+    print("1. Analyze an existing C/C++ source file")
+    print("2. Enter C/C++ code directly")
+    while True:
+        choice = input("Choose input [1/2]: ").strip()
+        if choice in {"1", "2"}:
+            break
+        print("Please enter 1 or 2.")
+
+    if choice == "1":
+        while True:
+            path = Path(input("Source file path: ").strip().strip('"')).expanduser()
+            if path.is_file():
+                return path.resolve(), None
+            print(f"File not found: {path}")
+
+    print("Enter C/C++ code. Type END on its own line when finished:")
+    code = "\n".join(iter(input, "END")) + "\n"
+    temporary_directory = tempfile.TemporaryDirectory(prefix="program_analysis_")
+    path = Path(temporary_directory.name) / "input.c"
+    path.write_text(code, encoding="utf-8")
+    return path, temporary_directory
+
+
+def interactive_arguments() -> argparse.Namespace:
+    print("\n=== Program Analysis ===")
+    print("Results will be printed in this terminal. No report files will be created.")
+    source_path, temporary_directory = prompt_source()
+    model = prompt_choice(
+        "Model",
+        ("multiview", "gcn", "gat", "graphsage"),
+        "multiview",
+    )
+    label = int(prompt_choice("Label (0 = benign, 1 = vulnerable)", ("0", "1"), "0"))
+    epochs = prompt_positive_int("Training epochs", 3)
+    return argparse.Namespace(
+        source=source_path,
+        code_file=None,
+        code=None,
+        interactive=False,
+        install_dependencies=False,
+        check_dependencies=False,
+        compiler_arg=[],
+        model=model,
+        label=label,
+        epochs=epochs,
+        hidden_channels=32,
+        learning_rate=1e-3,
+        batch_size=1,
+        device="cpu",
+        seed=42,
+        skip_training=False,
+        output_dir=Path("reports") / "latest_run",
+        terminal_only=True,
+        temporary_directory=temporary_directory,
+    )
 
 
 def create_model(name: str, feature_size: int, relation_count: int, hidden_channels: int):
@@ -159,6 +248,7 @@ def run_pipeline(args: argparse.Namespace) -> dict:
     from src.visualization.training_plots import plot_training_history
 
     source_path, temporary_directory = read_source(args)
+    temporary_directory = getattr(args, "temporary_directory", temporary_directory)
     try:
         torch.manual_seed(args.seed)
         ast_payload = extract_ast(source_path, args.compiler_arg)
@@ -186,40 +276,49 @@ def run_pipeline(args: argparse.Namespace) -> dict:
                 device=args.device,
             )
         metrics = evaluate_model(model, loader, device=args.device)
-        args.output_dir.mkdir(parents=True, exist_ok=True)
-        save_checkpoint(
-            args.output_dir / "model.pt",
-            model,
-            epoch=args.epochs if not args.skip_training else 0,
-            history=history,
-        )
-        (args.output_dir / "metrics.json").write_text(
-            json.dumps(
-                {
-                    "source_file": str(source_path),
-                    "model": args.model,
-                    "label": args.label,
-                    "graph": {
-                        "nodes": graph.number_of_nodes(),
-                        "edges": graph.number_of_edges(),
-                        "feature_size": sample.num_node_features,
-                        "relation_types": len(sample.relation_vocabulary),
+        if not args.terminal_only:
+            args.output_dir.mkdir(parents=True, exist_ok=True)
+            save_checkpoint(
+                args.output_dir / "model.pt",
+                model,
+                epoch=args.epochs if not args.skip_training else 0,
+                history=history,
+            )
+            (args.output_dir / "metrics.json").write_text(
+                json.dumps(
+                    {
+                        "source_file": str(source_path),
+                        "model": args.model,
+                        "label": args.label,
+                        "graph": {
+                            "nodes": graph.number_of_nodes(),
+                            "edges": graph.number_of_edges(),
+                            "feature_size": sample.num_node_features,
+                            "relation_types": len(sample.relation_vocabulary),
+                        },
+                        "history": history,
+                        "metrics": metrics,
                     },
-                    "history": history,
-                    "metrics": metrics,
-                },
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
-        if history["train_loss"]:
-            plot_training_history(history, args.output_dir / "training.png")
-        plot_confusion_matrix(
-            metrics["confusion_matrix"],
-            args.output_dir / "confusion_matrix.png",
-            class_names=["benign", "vulnerable"],
-        )
-        draw_program_graph(graph, args.output_dir / "program_graph.png")
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            if history["train_loss"]:
+                plot_training_history(history, args.output_dir / "training.png")
+            plot_confusion_matrix(
+                metrics["confusion_matrix"],
+                args.output_dir / "confusion_matrix.png",
+                class_names=["benign", "vulnerable"],
+            )
+            draw_program_graph(graph, args.output_dir / "program_graph.png")
+        metrics["graph"] = {
+            "nodes": graph.number_of_nodes(),
+            "edges": graph.number_of_edges(),
+            "feature_size": sample.num_node_features,
+            "relation_types": len(sample.relation_vocabulary),
+        }
+        metrics["model"] = args.model
+        metrics["source_file"] = str(source_path)
         return metrics
     finally:
         if temporary_directory is not None:
@@ -229,6 +328,10 @@ def run_pipeline(args: argparse.Namespace) -> dict:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if argv is None:
+        argv = sys.argv[1:]
+    if not argv:
+        args = interactive_arguments()
     if args.install_dependencies:
         install_dependencies()
     missing = check_dependencies()
@@ -249,7 +352,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     except (OSError, RuntimeError, ValueError) as error:
         parser.error(str(error))
     print(json.dumps(metrics, indent=2))
-    print(f"Artifacts written to {args.output_dir.resolve()}")
+    if not args.terminal_only:
+        print(f"Artifacts written to {args.output_dir.resolve()}")
     return 0
 
 

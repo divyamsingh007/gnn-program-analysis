@@ -106,6 +106,21 @@ to be installed separately.
 
 ## 5. Run the complete pipeline
 
+### Guided terminal mode
+
+Run `main.py` without arguments to use the interactive terminal workflow:
+
+```bash
+python main.py
+```
+
+The program asks whether to analyze an existing source file or enter code,
+then asks for the model, label, and training epochs. Results are printed
+directly in the terminal and no checkpoint, metrics, or plot files are
+created.
+
+### Command-line mode
+
 The single entry point extracts the source, builds all graph views, encodes
 features, trains a model, evaluates it, and writes artifacts under
 `reports/latest_run`:
@@ -129,7 +144,7 @@ Useful options include:
 --install-dependencies
 ```
 
-The run writes `model.pt`, `metrics.json`, `confusion_matrix.png`,
+The command-line run writes `model.pt`, `metrics.json`, `confusion_matrix.png`,
 `program_graph.png`, and, when training is enabled, `training.png`.
 
 ### Run inline or interactive source code
@@ -140,8 +155,8 @@ For a short program, pass code directly:
 python main.py --code "int main(void) { return 0; }" --label 0
 ```
 
-For multiline input, use `--interactive` and finish with `END` on its own
-line:
+For multiline input in command-line mode, use `--interactive` and finish with
+`END` on its own line:
 
 ```text
 python main.py --interactive --label 1

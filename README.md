@@ -174,11 +174,14 @@ The single-command entry point is `python main.py`.
 2. **Run:** Analyze, train, evaluate, and create reports in one command:
 
    ```bash
-   python main.py --source tests/sample.c --label 0
+   python main.py
    ```
 
-3. **Advanced usage:** Use the individual Python APIs for dataset-scale
-   experiments, custom splits, and research workflows.
+   The guided terminal workflow asks for the source input, model, label, and
+   training epochs, then prints the result without creating report files.
+
+3. **Advanced usage:** Use command-line options or the individual Python APIs
+   for dataset-scale experiments, custom splits, and research workflows.
 
    ```bash
    python main.py --help
