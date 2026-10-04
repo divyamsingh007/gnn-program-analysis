@@ -132,7 +132,8 @@ project-root/
 
 ## 🚀 Getting Started & Requirements
 
-> **Note:** These are placeholder instructions and will be updated as the implementation progresses.
+For the complete setup, pipeline, training, evaluation, visualization, and
+troubleshooting instructions, see [`docs/USAGE.md`](docs/USAGE.md).
 
 ### Prerequisites
 
@@ -166,7 +167,7 @@ project-root/
 
    *(Ensure you install the correct version of PyTorch and PyG corresponding to your CUDA version from their official websites).*
 
-### Basic Execution Flow (Upcoming)
+### Basic Execution Flow
 
 1. **Configure:** Set your dataset paths and model hyperparameters in `config/config.yaml`.
 2. **Extract:** Run the extraction pipeline to parse C/C++ files into graphs:
