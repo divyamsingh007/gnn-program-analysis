@@ -1,0 +1,32 @@
+# Global Configuration for GNN Program Analysis
+
+project:
+  name: "GNN_Vulnerability_Detection"
+  version: "0.1.0"
+
+paths:
+  data_raw: "data/raw"
+  data_interim: "data/interim"
+  data_processed: "data/processed"
+  data_splits: "data/splits"
+  checkpoints: "checkpoints"
+  reports: "reports"
+
+clang:
+  language_standard: "c11"
+  compiler_args:
+    - "-std=c11"
+  library_file: null # Set an absolute libclang path only when auto-discovery fails.
+
+model:
+  type: "multiview_gnn" # options: gcn, gat, graphsage, multiview_gnn
+  hidden_channels: 64
+  num_layers: 3
+  dropout: 0.5
+  learning_rate: 0.001
+  epochs: 100
+  batch_size: 32
+
+runtime:
+  device: "auto" # 'cpu', 'cuda', or 'auto'
+  random_seed: 42

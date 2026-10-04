@@ -1,0 +1,29 @@
+# Core scientific stack
+numpy>=1.24
+pandas>=2.0
+scikit-learn>=1.3
+
+# Deep learning and graph neural networks
+torch>=2.0
+torch-geometric>=2.4
+
+# Compiler analysis
+libclang>=16.0
+
+# Graph processing
+networkx>=3.0
+
+# Configuration
+PyYAML>=6.0
+
+# Visualization and reporting
+matplotlib>=3.7
+seaborn>=0.12
+tqdm>=4.66
+
+# Notebook exploration
+jupyter>=1.0
+ipykernel>=6.25
+
+# Testing
+pytest>=7.4

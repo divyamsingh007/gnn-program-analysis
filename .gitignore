@@ -1,0 +1,138 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions and native build outputs
+*.so
+*.pyd
+*.dll
+*.dylib
+*.obj
+*.o
+*.a
+*.lib
+*.exe
+
+# Python packaging and build artifacts
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+virtualenv/
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.hypothesis/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# AI implementation planning files
+AI_IMPLEMENTATION_PLAN.md
+AI_IMPLEMETATION_PLAN.md
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Project datasets and generated graph artifacts
+data/raw/
+data/interim/
+data/processed/
+data/splits/
+data/**/*.pt
+data/**/*.pth
+data/**/*.pkl
+data/**/*.pickle
+data/**/*.npy
+data/**/*.npz
+data/**/*.csv
+data/**/*.jsonl
+
+# Experiment logs and training outputs
+experiments/**/logs/
+experiments/**/runs/
+experiments/**/checkpoints/
+experiments/**/outputs/
+experiments/**/*.pt
+experiments/**/*.pth
+experiments/**/*.ckpt
+experiments/**/*.onnx
+experiments/**/*.log
+
+# Model checkpoints and ML tracking
+checkpoints/
+models/checkpoints/
+runs/
+wandb/
+mlruns/
+lightning_logs/
+tensorboard/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# Generated reports and visualizations
+reports/figures/
+reports/tables/
+reports/results/
+reports/**/*.png
+reports/**/*.jpg
+reports/**/*.jpeg
+reports/**/*.pdf
+reports/**/*.csv
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.orig
+*.log
